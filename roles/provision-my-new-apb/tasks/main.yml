@@ -1,0 +1,34 @@
+---
+
+- name: "Update last operation"
+  asb_last_operation:
+    description: "0%: Starting"
+  when: in_cluster
+
+- name: 'Verify if oc cli is installed'
+  command: oc version
+  register: oc_version
+
+- name: 'Create Project'
+  command: "oc new-project {{ project_name }}"
+
+- name: "Create the resource quota file"
+  template:
+    src: '{{ _apb_plan_id }}.j2'
+    dest: quota.yml
+
+- name: "Attached resource quota to the project"
+  command: "oc create -f quota.yml -n {{ project_name }}"
+
+- name: "Add admin users to the project"
+  command: "oc adm policy add-role-to-user admin {{ item }} -n {{ project_name }}"
+  with_items: "{{ admin_users.split(',') }}"
+
+- name: "Add readonly users to the project"
+  command: "oc adm policy add-role-to-user view {{ item }} -n {{ project_name }}"
+  with_items: "{{ readonly_users.split(',') }}"
+
+- name: "Update last operation"
+  asb_last_operation:
+    description: "100%: Done"
+  when: in_cluster
