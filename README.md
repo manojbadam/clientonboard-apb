@@ -38,6 +38,29 @@ Push the docker image
 docker push manojbadam/customer-apb
 ```
 
+### Steps to test the APB locally
+##### Step 1 - Configure your local oc cli
+since we are using the oc commands inside the playbook tasks, we need to properly configure it. 
+```
+oc login https://127.0.0.1:8443 --token=lcBlU0Du4qMpb-qf4Oqt9AI4MiT7T5n6vlFbLhowNKQ
+```
+##### Step 2 - Run the APB docker image
+```
+docker run --rm --net=host -v $HOME/.kube:/opt/apb/.kube:z -u $UID \
+docker.io/manojbadam/customer-apb:latest \
+provision \
+--extra-vars 'namespace=default' \
+--extra-vars 'project_name=manoj' \
+--extra-vars 'admin_users=manojbadam,debianmaster' \
+--extra-vars 'readonly_users=karthik' \
+--extra-vars 'project_cpu=4' \
+--extra-vars 'project_mem=8' \
+--extra-vars 'num_services=4' \
+--extra-vars '_apb_plan_id=gold'
+```
+This should work without any errors and create the project `manoj` and add resource quotas to it. 
+
+
 ### ASB configuration
 Ansible service broker needs to be configured to listen to our docker org (docker.io/manojbadam) and populate the service catalog with the APB.
 ```
